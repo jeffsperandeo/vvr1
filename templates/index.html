@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenAI Streaming Example</title>
+    <link rel="stylesheet" href="App.css">
     <style>
         body {
             display: flex;
@@ -11,56 +12,70 @@
             align-items: center;
             justify-content: flex-start;
             height: 100vh;
+            font-family: Arial, sans-serif;
         }
 
         h1 {
-            margin-bottom: 50px;
+            margin: 20px 0;
+        }
+
+        textarea {
+            margin-bottom: 10px;
         }
 
         pre {
             white-space: pre-wrap;
             word-wrap: break-word;
-            display: inline;
-            max-width: 50%;
+            width: 90%;
+            max-width: 600px;
+            background-color: #f4f4f4;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
+    <h1>Ask OpenAI</h1>
     <form>
-        <textarea id="input" placeholder="Enter your message" cols="50"></textarea>
+        <textarea id="input" placeholder="Enter your message" cols="50" rows="4"></textarea>
         <button type="submit">Send</button>
     </form>
-    <pre id="body"></pre>
+    <pre id="body">Your response will appear here...</pre>
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
-        const body = document.getElementById('body');
-        const submit_btn = document.querySelector('button');
-        const input = document.getElementById('input');
+        const form = document.querySelector('form');
+        const bodyElement = document.getElementById('body');
+        const inputElement = document.getElementById('input');
 
-        submit_btn.addEventListener("click", async (e) => {
+        form.addEventListener("submit", async (e) => {
             e.preventDefault();
-
+            bodyElement.innerHTML = "Loading response...";
             const response = await fetch("/answer", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({message: input.value})
+                body: JSON.stringify({message: inputElement.value})
             });
 
             const reader = response.body.getReader();
             let output = "";
 
-            while (true) {
-                const { done, value } = await reader.read();
-                output += new TextDecoder().decode(value);
-                body.innerHTML = marked.parse(output);
-
-                if (done) {
-                    return;
-                }
+            function read() {
+                reader.read().then(({ done, value }) => {
+                    if (done) {
+                        bodyElement.innerHTML = marked.parse(output);
+                        return;
+                    }
+                    output += new TextDecoder().decode(value);
+                    bodyElement.innerHTML = marked.parse(output);
+                    read();
+                });
             }
 
-        })
+            read();
+        });
     </script>
 </body>
 </html>

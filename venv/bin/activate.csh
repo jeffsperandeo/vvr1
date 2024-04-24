@@ -9,7 +9,7 @@ alias deactivate 'test $?_OLD_VIRTUAL_PATH != 0 && setenv PATH "$_OLD_VIRTUAL_PA
 # Unset irrelevant variables.
 deactivate nondestructive
 
-setenv VIRTUAL_ENV "/Users/jeffsperandeo/Projects/vvr1/youtube_video_code/2024/03/28/How to Stream OpenAI API Responses in a Flask App/venv"
+setenv VIRTUAL_ENV "/Users/jeffsperandeo/Projects/vvr1/venv"
 
 set _OLD_VIRTUAL_PATH="$PATH"
 setenv PATH "$VIRTUAL_ENV/bin:$PATH"

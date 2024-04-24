@@ -1,31 +1,42 @@
-from flask import Flask, render_template, request 
+from flask import Flask, request, Response
+
 from openai import OpenAI
+import logging
+from dotenv import load_dotenv
+import os
 
-client = OpenAI()
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
-def create_app():
-    app = Flask(__name__)
+# Load environment variables from .env file
+load_dotenv()
 
-    @app.route("/")
-    def index():
-        return render_template("index.html")
+# Instantiate OpenAI client with API key from environment variable
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-    @app.route("/answer", methods=["GET", "POST"])
-    def answer():
-        data = request.get_json()
-        message = data["message"]
+app = Flask(__name__)
 
-        def generate():
-            stream = client.chat.completions.create(
-                model="gpt-4",
-                messages=[{"role": "user", "content": message}],
-                stream=True
-            ) 
+@app.route("/answer", methods=["POST"])
+def answer():
+    data = request.json
+    user_message = data["message"]
+    logging.info(f"Received message: {user_message}")
 
-            for chunk in stream:
-                if chunk.choices[0].delta.content is not None:
-                    yield(chunk.choices[0].delta.content)
+    try:
+        # Make the API call to OpenAI using the correct endpoint for the chat model
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",  # Chat model
+            messages=[{"role": "user", "content": user_message}]
+        )
+        # Process the response
+        message_content = response.choices[0].message.content.strip() if response.choices else "Unable to get a valid response."
+        logging.info(f"Received response content: {message_content}")
+        return Response(message_content, mimetype="text/plain")
 
-        return generate(), {"Content-Type": "text/plain"}
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        return Response(f"An error occurred while generating the response: {e}", mimetype="text/plain")
 
-    return app
+if __name__ == "__main__":
+    app.run(debug=True, port=5001)
+

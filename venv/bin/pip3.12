@@ -1,6 +1,4 @@
-#!/bin/sh
-'''exec' "/Users/jeffsperandeo/Projects/vvr1/youtube_video_code/2024/03/28/How to Stream OpenAI API Responses in a Flask App/venv/bin/python3" "$0" "$@"
-' '''
+#!/Users/jeffsperandeo/Projects/vvr1/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys
